@@ -170,6 +170,9 @@ public class SearchController {
         int pageNumInt = 1;
         try {
             pageNumInt = Integer.parseInt(pageNumStr);
+            if (pageNumInt <= 0) {
+                pageNumInt = 1;
+            }
         } catch (Exception ignored) {
         }
 

@@ -9,57 +9,153 @@
     <script src="js/bootstrap.min.js" type="application/javascript">
 
     </script>
+    <style>
+        #linkIcon {
+            color: darkcyan;
+        }
+
+        #hddIcon {
+            color: #5cb85c;
+        }
+
+        #flagIcon {
+            color: #d9534f
+        }
+
+        #right {
+            float: left;
+            width: 30%;
+            padding-right: 15px;
+        }
+
+        #left {
+            float: left;
+            width: 70%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        #num {
+            color: dodgerblue;
+        }
+
+        #keyword {
+            width: 200px;
+        }
+
+        #domain {
+            width: 200px;
+        }
+
+        #pageNum {
+            width: 70px;
+        }
+    </style>
 
     <nav class="navbar navbar-default">
         <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">ACS_Design</a>
+                <a class="navbar-brand" href="#">ACS</a>
             </div>
 
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <form class="navbar-form navbar-left">
-                    <div class="form-group">
-                        <input type="text" maxlength="25" name="keyword" th:value="${keyword}" class="form-control"
-                               placeholder="请输入关键字">
-                    </div>
-                    <button type="submit" class="btn btn-default">搜索</button>
-                    <div class="form-group">
-                        <input type="text" maxlength="25" name="domain" th:value="${domain}" class="form-control"
-                               placeholder="站点内检索">
-                    </div>
-                    <div class="form-group">
-                        <input type="number" maxlength="5" name="pageNum" th:value="${pageNum}" class="form-control"
-                               placeholder="页码">
-                    </div>
-                </form>
-            </div>
+            <form class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input id="keyword" type="text" maxlength="40" name="keyword" th:value="${keyword}"
+                           class="form-control" placeholder="请输入关键字">
+                    <button id="btnSubmit" type="submit" class="btn btn-default">搜索</button>
+                </div>
+                <div class="form-group">
+                    <input id="domain" type="text" maxlength="40" name="domain" th:value="${domain}"
+                           class="form-control" placeholder="站点内检索">
+                </div>
+                <div class="form-group">
+                    <input id="pageNum" type="number" maxlength="5" name="pageNum" th:value="${pageNum}"
+                           class="form-control" placeholder="页码">
+                </div>
+            </form>
         </div>
     </nav>
 </head>
 
 <body marginwidth="30%">
-<h th:text="'查询结果：' + ${totalItemNum} + '条，共' + ${totalPageNum} + '页，耗时' + ${totalTookMillis} +'毫秒'"></h>
 <div class="list-group">
-    <tr th:each="info : ${pageInfos}">
-        <a class="list-group-item" th:href="${info.getUrl()}" th:target="_blank">
-            <h4 class="list-group-item-heading" th:text="${info.getTitle()}"></h4>
-            <p class="list-group-item-text" th:text="${info.getContent()}"></p>
+    <div id="left">
+        <div th:if="${pageInfos.size() == 0}">
+            <h1>没有数据</h1>
+        </div>
+        <div th:if="${pageInfos.size() != 0}" class="list-group">
+            <tr th:each="info : ${pageInfos}">
+                <li class="list-group-item">
+                    <a style="font-size: large;" th:href="${info.getUrl()}" th:target="_blank">
+                        <b th:text="${info.getTitle()}"></b>
+                    </a>
+                    <p class="list-group-item-text" th:text="${info.getContent()}"></p>
 
-            <h class="glyphicon glyphicon-flag"></h>
-            <mark th:text="${info.getContentType()}"></mark>
-            <h>&nbsp;</h>
+                    <h id="flagIcon" class="glyphicon glyphicon-flag"></h>
+                    <h th:text="${info.getContentType()}"></h>
+                    <h>&nbsp;&nbsp;</h>
 
-            <span class="glyphicon glyphicon-hdd"></span>
-            <span class="list-group-item-text" th:text="${info.getUpdateDate()}"></span>
-            <h>更新&nbsp;</h>
+                    <span id="hddIcon" class="glyphicon glyphicon-hdd"></span>
+                    <span class="list-group-item-text" th:text="${info.getUpdateDate()}"></span>
+                    <h>更新&nbsp;&nbsp;</h>
 
-            <span class="glyphicon glyphicon-link"></span>
-            <h class="list-group-item-text" th:href="${info.getUrl()}" th:text="${info.getUrl()}"></h>
-            <h>&nbsp;</h>
+                    <span id="linkIcon" class="glyphicon glyphicon-link"></span>
+                    <a class="list-group-item-text" th:href="${info.getUrl()}" th:target="_blank"
+                       th:text="${info.getUrl()}"></a>
 
-        </a>
-    </tr>
-</div>
+                </li>
+            </tr>
+        </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li>
+                    <a style="cursor: pointer" aria-label="Previous"
+                          onclick="{document.getElementById('pageNum').value -= 1;
+                       document.getElementById('btnSubmit').click()}">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <tr th:each="index : ${#numbers.sequence(1,totalPageNum)}">
+                    <li th:if="${index == pageNum}" class="active">
+                        <a style="cursor: pointer" th:text="${index}"></a>
+                    </li>
+                    <li th:if="${index != pageNum and index >= pageNum - 3 and index <= pageNum + 3}">
+                        <a style="cursor: pointer" th:text="${index}"
+                              onclick="{document.getElementById('pageNum').value = this.text;
+                                document.getElementById('btnSubmit').click()}">
+                        </a>
+                    </li>
+                </tr>
+                <li>
+                    <a style="cursor: pointer" aria-label="Next"
+                          onclick="{document.getElementById('pageNum').value -= -1;
+                       document.getElementById('btnSubmit').click()}">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li>
+                    <input id="pageNumBotton" style="width: 50px;height: 34px;margin-left: 10px;"
+                           type="number" maxlength="5" th:value="${pageNum}" placeholder="页码">
+                    <button style="height:34px;"
+                            onclick="{document.getElementById('pageNum').value
+                            = document.getElementById('pageNumBotton').value;
+                            document.getElementById('btnSubmit').click()}">跳转
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id="right" class="list-group">
+        <h4 class=".list-group-item-heading">信息展示</h4>
+        <h class="list-group-item">匹配结果：
+            <b id='num' th:text="${totalItemNum}"/> 条，分
+            <b id='num' th:text="${totalPageNum}"/> 页显示
+        </h>
+        <h class="list-group-item">耗时：<b id='num' th:text="${totalTookMillis}"/> 毫秒</h>
+        <h class="list-group-item">截至昨天，本网站共收集<b id='num' th:text="${4553500}"/> 条数据</h>
+    </div>
+
 </body>
 
 </html>
