@@ -1,7 +1,7 @@
 package com.seven.community.controller;
 
+import com.seven.community.Model.DataHelper;
 import com.seven.community.Model.PageInfo;
-import com.seven.community.api.Query;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -44,6 +44,8 @@ public class SearchController {
      */
     private long totalTookMillis;
 
+    private DataHelper dataHelper = new DataHelper();
+
     /**
      * cs连接
      */
@@ -55,13 +57,54 @@ public class SearchController {
      *
      * @param keyword        关键字
      * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
+     * @return 查询到的结果
+     */
+    private List<PageInfo> query(String keyword, int pageNum) {
+
+    }
+
+    /**
+     * 根据关键字获取查询数据
+     *
+     * @param keyword        关键字
      * @param domain         域名，将结果限定在某个域名
+     * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
+     * @param usePr          是否使用PageRank排序
+     * @return 查询到的结果
+     */
+    private List<PageInfo> query(String keyword, String domain, int pageNum
+            , boolean usePr) {
+
+    }
+
+    /**
+     * 根据关键字获取查询数据
+     *
+     * @param keyword        关键字
+     * @param domain         域名，将结果限定在某个域名
+     * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
      * @param isMatchTitle   是否匹配标题中的关键字
      * @param isMatchContent 是否匹配内容中的关键字
      * @return 查询到的结果
      */
-    private List<PageInfo> Query(String keyword, String domain, int pageNum
+    private List<PageInfo> query(String keyword, String domain, int pageNum
             , boolean isMatchTitle, boolean isMatchContent) {
+
+    }
+
+    /**
+     * 根据关键字获取查询数据
+     *
+     * @param keyword        关键字
+     * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
+     * @param domain         域名，将结果限定在某个域名
+     * @param isMatchTitle   是否匹配标题中的关键字
+     * @param isMatchContent 是否匹配内容中的关键字
+     * @param usePr          是否使用PageRank排序
+     * @return 查询到的结果
+     */
+    private List<PageInfo> query(String keyword, String domain, int pageNum
+            , boolean isMatchTitle, boolean isMatchContent, boolean usePr) {
         QueryBuilder queryKeyword;
         String[] multiMatchItems;
 
@@ -122,15 +165,16 @@ public class SearchController {
         return pageInfos;
     }
 
+
     /**
      * 搜索界面的控制类
      *
-     * @param keyword      查询关键字
-     * @param domain       限制域名，默认不限制
-     * @param model        向前端传数据
-     * @param pageNumStr   页码每页显示<code>LIMIT</code>条数据
-     * @param matchTitle   是否匹配标题中的关键字
-     * @param matchContent 是否匹配内容中的关键字
+     * @param keyword     查询关键字
+     * @param domain      限制域名，默认不限制
+     * @param model       向前端传数据
+     * @param pageNumStr  页码每页显示<code>LIMIT</code>条数据
+     * @param matchOption 匹配规则，00或11=匹配标题和内容，01=只匹配内容，10=只匹配标题
+     * @param sortOrder   排序方式，1=使用PageRank值排序，0=使用默认排序（倒排索引）
      * @return 结果
      */
     @GetMapping("/search")
@@ -138,16 +182,34 @@ public class SearchController {
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
             @RequestParam(name = "domain", defaultValue = "") String domain,
             @RequestParam(name = "pageNum", defaultValue = "1") String pageNumStr,
-            @RequestParam(name = "matchTitle", defaultValue = "true") String matchTitle,
-            @RequestParam(name = "matchContent", defaultValue = "true") String matchContent,
+            @RequestParam(name = "matchOption", defaultValue = "11") String matchOption,
+            @RequestParam(name = "sortOrder", defaultValue = "0") String sortOrder,
             Model model) {
+
+        // 是否使用PageRank排序
+        boolean usePr = "1".equals(sortOrder);
+        // 如果不是0或者1，就使用默认值0
+        if (!"0".equals(sortOrder) && !"1".equals(sortOrder)) {
+            sortOrder = "0";
+        }
+
+        boolean matchTitle = true, matchContent = true;
+        // 判断长度，如果不是两个字符，则使用默认值
+        if (matchOption.length() == 2) {
+            matchContent = matchOption.charAt(1) == '1';
+            matchTitle = matchOption.charAt(0) == '1';
+
+            // 如果既不匹配标题，又不匹配内容，则使用默认值
+            if (!matchTitle && !matchContent) {
+                matchContent = true;
+                matchTitle = true;
+            }
+        }
+
 
         totalPageNum = 0;
         totalItemNum = 0;
         totalTookMillis = 0;
-
-        boolean isMatchTitle = Boolean.parseBoolean(matchTitle);
-        boolean isMatchContent = Boolean.parseBoolean(matchContent);
 
         // 如果关键字为空，查询结果应该为空
         //  实际上，ElasticSearch关键字为空时，会列出所有结果，
@@ -156,13 +218,14 @@ public class SearchController {
             model.addAttribute("keyword", keyword)
                     .addAttribute("domain", domain)
                     .addAttribute("pageNum", pageNumStr)
-                    .addAttribute("matchTitle", isMatchTitle)
-                    .addAttribute("matchContent", isMatchContent)
+                    .addAttribute("matchOption", matchOption)
+                    .addAttribute("sortOrder", sortOrder)
                     // 返回空的结果
                     .addAttribute("pageInfos", new ArrayList<PageInfo>())
                     .addAttribute("totalPageNum", totalPageNum)
                     .addAttribute("totalItemNum", totalItemNum)
-                    .addAttribute("totalTookMillis", totalTookMillis);
+                    .addAttribute("totalTookMillis", totalTookMillis)
+                    .addAttribute("dataHelper", dataHelper);
             return "search";
         }
 
@@ -179,11 +242,14 @@ public class SearchController {
         model.addAttribute("keyword", keyword)
                 .addAttribute("domain", domain)
                 .addAttribute("pageNum", pageNumInt)
+                .addAttribute("matchOption", matchOption)
+                .addAttribute("sortOrder", sortOrder)
                 // 返回空的结果
-                .addAttribute("pageInfos", Query(keyword, domain, pageNumInt, isMatchTitle, isMatchContent))
+                .addAttribute("pageInfos", query(keyword, domain, pageNumInt, matchTitle, matchContent, usePr))
                 .addAttribute("totalPageNum", totalPageNum)
                 .addAttribute("totalItemNum", totalItemNum)
-                .addAttribute("totalTookMillis", totalTookMillis);
+                .addAttribute("totalTookMillis", totalTookMillis)
+                .addAttribute("dataHelper", dataHelper);
         return "search";
     }
 }

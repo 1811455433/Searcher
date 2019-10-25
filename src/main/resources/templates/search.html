@@ -34,7 +34,12 @@
             padding-right: 15px;
             padding-left: 15px;
         }
-
+        #pr {
+            position: absolute;
+            color: dodgerblue;
+            top: 10px;
+            right: 15px;
+        }
         #num {
             color: dodgerblue;
         }
@@ -72,6 +77,21 @@
                     <input id="pageNum" type="number" maxlength="5" name="pageNum" th:value="${pageNum}"
                            class="form-control" placeholder="页码">
                 </div>
+                <div class="form-group">
+                    <select id="matchOption" name="matchOption" style="width: 120px;" class="form-control"
+                            onchange="selectOnchang(this)">
+                        <option value="11">标题和内容</option>
+                        <option value="01">仅标题</option>
+                        <option value="10">仅内容</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="sortOrder" name="sortOrder" style="width: 145px;" class="form-control"
+                            onchange="selectOnchang(this)">
+                        <option value="0">倒排排序</option>
+                        <option value="1">PageRank排序</option>
+                    </select>
+                </div>
             </form>
         </div>
     </nav>
@@ -89,6 +109,7 @@
                     <a style="font-size: large;" th:href="${info.getUrl()}" th:target="_blank">
                         <b th:text="${info.getTitle()}"></b>
                     </a>
+                    <h id="pr" th:text="'PageRank：' + ${info.getWeight()}"></h>
                     <p class="list-group-item-text" th:text="${info.getContent()}"></p>
 
                     <h id="flagIcon" class="glyphicon glyphicon-flag"></h>
@@ -106,11 +127,11 @@
                 </li>
             </tr>
         </div>
-        <nav aria-label="Page navigation">
+        <nav th:if="${pageInfos.size() != 0}" aria-label="Page navigation">
             <ul class="pagination">
                 <li>
                     <a style="cursor: pointer" aria-label="Previous"
-                          onclick="{document.getElementById('pageNum').value -= 1;
+                       onclick="{document.getElementById('pageNum').value -= 1;
                        document.getElementById('btnSubmit').click()}">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
@@ -121,14 +142,14 @@
                     </li>
                     <li th:if="${index != pageNum and index >= pageNum - 3 and index <= pageNum + 3}">
                         <a style="cursor: pointer" th:text="${index}"
-                              onclick="{document.getElementById('pageNum').value = this.text;
+                           onclick="{document.getElementById('pageNum').value = this.text;
                                 document.getElementById('btnSubmit').click()}">
                         </a>
                     </li>
                 </tr>
                 <li>
                     <a style="cursor: pointer" aria-label="Next"
-                          onclick="{document.getElementById('pageNum').value -= -1;
+                       onclick="{document.getElementById('pageNum').value -= -1;
                        document.getElementById('btnSubmit').click()}">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
@@ -153,9 +174,12 @@
             <b id='num' th:text="${totalPageNum}"/> 页显示
         </h>
         <h class="list-group-item">耗时：<b id='num' th:text="${totalTookMillis}"/> 毫秒</h>
-        <h class="list-group-item">截至昨天，本网站共收集<b id='num' th:text="${4553500}"/> 条数据</h>
+        <h class="list-group-item">
+            截至 <b id='num' th:text="${dataHelper.getLastUpdateDate()}"/> ，
+            本网站共收集 <b id='num' th:text="${dataHelper.getNumOfAllData()}"/> 条数据
+        </h>
     </div>
-
+</div>
 </body>
 
 </html>
