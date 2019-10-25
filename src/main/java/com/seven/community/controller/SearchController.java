@@ -2,11 +2,16 @@ package com.seven.community.controller;
 
 import com.seven.community.Model.DataHelper;
 import com.seven.community.Model.PageInfo;
+import com.seven.community.api.Query;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,46 +62,6 @@ public class SearchController {
      *
      * @param keyword        关键字
      * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
-     * @return 查询到的结果
-     */
-    private List<PageInfo> query(String keyword, int pageNum) {
-
-    }
-
-    /**
-     * 根据关键字获取查询数据
-     *
-     * @param keyword        关键字
-     * @param domain         域名，将结果限定在某个域名
-     * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
-     * @param usePr          是否使用PageRank排序
-     * @return 查询到的结果
-     */
-    private List<PageInfo> query(String keyword, String domain, int pageNum
-            , boolean usePr) {
-
-    }
-
-    /**
-     * 根据关键字获取查询数据
-     *
-     * @param keyword        关键字
-     * @param domain         域名，将结果限定在某个域名
-     * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
-     * @param isMatchTitle   是否匹配标题中的关键字
-     * @param isMatchContent 是否匹配内容中的关键字
-     * @return 查询到的结果
-     */
-    private List<PageInfo> query(String keyword, String domain, int pageNum
-            , boolean isMatchTitle, boolean isMatchContent) {
-
-    }
-
-    /**
-     * 根据关键字获取查询数据
-     *
-     * @param keyword        关键字
-     * @param pageNum        第几页，每<code>LIMIT</code>项作为一页
      * @param domain         域名，将结果限定在某个域名
      * @param isMatchTitle   是否匹配标题中的关键字
      * @param isMatchContent 是否匹配内容中的关键字
@@ -119,30 +84,36 @@ public class SearchController {
             multiMatchItems = new String[]{"title"};
         }
 
+        // 关键字查询
         queryKeyword = QueryBuilders.multiMatchQuery(keyword, multiMatchItems);
 
-        SearchResponse response;
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch("page")
+                .setTypes("_doc")
+                .setFrom((pageNum - 1) * LIMIT)
+                .setSize(LIMIT);
+
+        // 排序
+        if(usePr) {
+            // 使用降序排序，如果缺少值，则使用0代替
+            SortBuilder sortBuilder = SortBuilders.fieldSort("weight").missing(0.0).order(SortOrder.DESC);
+            searchRequestBuilder.addSort(sortBuilder);
+        }
 
         // 如果域名约束不为空，则启用域名约束，否则不启用
         if (!"".equals(domain)) {
             QueryBuilder queryUrl = QueryBuilders.matchQuery("url", domain);
-            response = client.prepareSearch("page")
-                    .setTypes("_doc")
-                    .setQuery(QueryBuilders
+            searchRequestBuilder.setQuery(
+                    QueryBuilders
                             .boolQuery()
                             .must(queryKeyword)
-                            .must(queryUrl))
-                    .setFrom((pageNum - 1) * LIMIT)
-                    .setSize(LIMIT)
-                    .get();
+                            .must(queryUrl)
+            );
         } else {
-            response = client.prepareSearch("page")
-                    .setTypes("_doc")
-                    .setQuery(queryKeyword)
-                    .setFrom((pageNum - 1) * LIMIT)
-                    .setSize(LIMIT)
-                    .get();
+            searchRequestBuilder.setQuery(queryKeyword);
         }
+
+
+        SearchResponse response = searchRequestBuilder.get();
 
         totalTookMillis = response.getTook().getMillis();
         totalItemNum = response.getHits().totalHits;
@@ -196,8 +167,8 @@ public class SearchController {
         boolean matchTitle = true, matchContent = true;
         // 判断长度，如果不是两个字符，则使用默认值
         if (matchOption.length() == 2) {
-            matchContent = matchOption.charAt(1) == '1';
-            matchTitle = matchOption.charAt(0) == '1';
+            matchContent = matchOption.charAt(0) == '1';
+            matchTitle = matchOption.charAt(1) == '1';
 
             // 如果既不匹配标题，又不匹配内容，则使用默认值
             if (!matchTitle && !matchContent) {
