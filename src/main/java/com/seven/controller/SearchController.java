@@ -1,8 +1,7 @@
-package com.seven.community.controller;
+package com.seven.controller;
 
-import com.seven.community.Model.DataHelper;
-import com.seven.community.Model.PageInfo;
-import com.seven.community.api.Query;
+import com.seven.model.PageInfo;
+import com.seven.model.DataHelper;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;

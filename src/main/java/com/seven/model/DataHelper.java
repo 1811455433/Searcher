@@ -1,13 +1,12 @@
-package com.seven.community.Model;
+package com.seven.model;
 
-import com.seven.community.ESConfig;
+import com.seven.ESConfig;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
-import javax.xml.crypto.Data;
 import java.text.SimpleDateFormat;
 
 import java.util.Date;
@@ -64,7 +63,7 @@ public class DataHelper {
             }
         };
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
-                1, new BasicThreadFactory.Builder().namingPattern(" timing Execution-%d").daemon(false).build());
+                1, new BasicThreadFactory.Builder().namingPattern("DataHelper").daemon(false).build());
         // 第一个参数是任务，第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间,第四个参数是时间单位
         scheduledThreadPoolExecutor.scheduleAtFixedRate(work, 0L, PERIOD, TimeUnit.HOURS);
     }

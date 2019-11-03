@@ -1,4 +1,4 @@
-package com.seven.community.Model;
+package com.seven.model;
 
 /**
  * @author Seven

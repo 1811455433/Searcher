@@ -1,13 +1,13 @@
-package com.seven.community;
+package com.seven;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CommunityApplication {
+public class MainApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CommunityApplication.class, args);
+        SpringApplication.run(MainApplication.class, args);
     }
 
 }
