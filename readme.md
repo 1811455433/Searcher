@@ -1,22 +1,16 @@
-ACS_Design          // 主目录
-    Data            // 数据
-        Raw         // 未处理
-            1.json
-            2.json
-        Cooked      // 已处理
-            1.json
-            2.json
-    DataCollection  // 数据收集
-        *.py
-    DataProcess     // 数据处理
-        *.py
-    WebApp          // 网站
-        *
-# Java代码
-## 如果修改了页面的信息
-需要修改的项目如下：
-- PageInfo
-- search.html
+# 小规模搜索引擎Web服务
+
+<img src="./src/main/resources/static/images/logo.png" width="300px" alt="logo" align="">
+
+[主项目](https://github.com/1811455433/ACS_Design)
+
+# 截图
+
+- 主页
+![](./images/homePage.png)
+
+- 搜索界面
+![](./images/1.png)
 
 # ElasticSearch
 ## 创建索引
