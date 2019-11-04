@@ -1,6 +1,6 @@
 # 小规模搜索引擎Web服务
 
-<img src="./src/main/resources/static/images/logo.png" width="300px" alt="logo" align="">
+<img src="./images/logo.png" width="300px" alt="logo" align="">
 
 [主项目](https://github.com/1811455433/ACS_Design)
 
